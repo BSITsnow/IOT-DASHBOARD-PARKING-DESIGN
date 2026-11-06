@@ -1,0 +1,51 @@
+.root-pane { -fx-background-color: #f4f6f9; -fx-font-family: "Segoe UI", "Helvetica Neue", sans-serif; }
+.page-scroll { -fx-background-color: #f4f6f9; }
+.page-scroll > .viewport { -fx-background-color: #f4f6f9; }
+
+.title { -fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #1f2937; }
+.subtitle { -fx-font-size: 13px; -fx-text-fill: #6b7280; }
+.section-title { -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #374151; }
+.route-label { -fx-font-size: 14px; -fx-text-fill: #185fa5; -fx-font-weight: bold; }
+
+.card { -fx-background-color: white; -fx-background-radius: 12; -fx-padding: 16;
+        -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 8, 0, 0, 2); }
+.card-caption { -fx-font-size: 12px; -fx-text-fill: #6b7280; }
+.card-value { -fx-font-size: 34px; -fx-font-weight: bold; -fx-text-fill: #111827; }
+.card-available .card-value { -fx-text-fill: #16a34a; }
+.card-occupied .card-value { -fx-text-fill: #dc2626; }
+
+.progress-bar > .track { -fx-background-color: #e5e7eb; -fx-background-radius: 4; }
+.progress-bar > .bar { -fx-background-color: #3b82f6; -fx-background-radius: 4; -fx-padding: 4; }
+
+.alert { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; -fx-font-weight: bold;
+         -fx-font-size: 15px; -fx-padding: 12 16; -fx-background-radius: 8;
+         -fx-border-color: #dc2626; -fx-border-radius: 8; }
+
+/* ---- Parking map ---- */
+.parking-map { -fx-background-color: #444441; -fx-background-radius: 12; }
+.lane { -fx-fill: #5f5e5a; }
+.lane-line { -fx-stroke: #d3d1c7; -fx-stroke-width: 2; -fx-stroke-dash-array: 14 10; }
+
+.slot-rect { -fx-stroke: white; -fx-stroke-width: 2; }
+.slot-vacant { -fx-fill: #22c55e; }
+.slot-occupied { -fx-fill: #ef4444; }
+.slot-name { -fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white; }
+.slot-status { -fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: white; }
+
+.car-body { -fx-fill: #fecaca; }
+.car-glass { -fx-fill: #b91c1c; }
+
+.route { -fx-stroke: #3b82f6; -fx-stroke-width: 5; -fx-stroke-line-cap: round;
+         -fx-stroke-line-join: round; -fx-stroke-dash-array: 2 10; -fx-fill: transparent; }
+.route-arrow { -fx-fill: #3b82f6; }
+.you-dot { -fx-fill: #3b82f6; -fx-stroke: white; -fx-stroke-width: 2; }
+.map-label { -fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: white; }
+
+.legend-green { -fx-text-fill: #16a34a; -fx-font-weight: bold; }
+.legend-red { -fx-text-fill: #dc2626; -fx-font-weight: bold; }
+.legend-route { -fx-text-fill: #185fa5; -fx-font-weight: bold; }
+
+.footer-text { -fx-text-fill: #4b5563; -fx-font-size: 13px; }
+.dot-ok { -fx-text-fill: #16a34a; }
+.dot-stale { -fx-text-fill: #f59e0b; }
+.dot-wait { -fx-text-fill: #9ca3af; }

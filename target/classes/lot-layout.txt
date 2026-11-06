@@ -1,0 +1,24 @@
+# Parking lot layout. Edit this file to redesign the map, no Java changes needed.
+# Coordinates are pixels from the top-left corner of the map.
+#
+# canvas <width> <height>
+# lane <x> <y> <width> <height>            driving lane (route runs along its middle)
+# entrance <x> <y>                         where the driver starts ("You")
+# exit <x> <y>                             label only
+# slot <id> <x> <y> <w> <h> <up|down>      up = opening faces up (slot sits below the lane)
+#                                          down = opening faces down (slot sits above the lane)
+# The order of slot lines is the order of values in the sensor data: S:1,0,1,0,1,1
+# Use --layout=path\to\file.txt to load a different layout.
+
+canvas 680 410
+lane 20 170 640 100
+entrance 52 220
+exit 632 220
+
+slot P1 110 48 130 102 down
+slot P2 260 48 130 102 down
+slot P3 410 48 130 102 down
+
+slot P4 110 290 130 102 up
+slot P5 260 290 130 102 up
+slot P6 410 290 130 102 up
