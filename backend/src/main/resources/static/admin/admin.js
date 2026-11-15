@@ -112,8 +112,7 @@ async function refresh() {
 
 refresh();
 setInterval(refresh, 3000);
-=======
-const $ = id => document.getElementById(id);
+
 let me = null;
 
 // ---------- tabs ----------
