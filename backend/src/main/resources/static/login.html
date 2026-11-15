@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Parking: Sign in</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <style>
+    body { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+    .box { width: 100%; max-width: 380px; }
+    .box h1 { font-size: 22px; margin: 0 0 4px; }
+    .box .sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+    .tabs button { flex: 1; }
+    .tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .submit { width: 100%; margin-top: 16px; padding: 10px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 14px; }
+  </style>
+</head>
+<body>
+  <div class="box card">
+    <h1>Smart Parking</h1>
+    <p class="sub">Sign in to see parking availability.</p>
+
+    <div class="tabs">
+      <button type="button" id="tab-in" class="on">Sign in</button>
+      <button type="button" id="tab-up">New client account</button>
+    </div>
+
+    <form id="form" autocomplete="on">
+      <div id="name-row" hidden>
+        <label for="fullName">Full name (optional)</label>
+        <input id="fullName" autocomplete="name" maxlength="80">
+      </div>
+      <label for="username">Username</label>
+      <input id="username" autocomplete="username" required maxlength="30">
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="primary submit" id="submit" type="submit">Sign in</button>
+      <div class="msg" id="msg" role="alert"></div>
+    </form>
+    <p class="hint" id="hint">Administrators and clients sign in here. The page you see depends on your account.</p>
+  </div>
+
+  <script src="/assets/api.js"></script>
+  <script>
+    let mode = "in";
+    const $ = id => document.getElementById(id);
+
+    function setMode(m) {
+      mode = m;
+      $("tab-in").classList.toggle("on", m === "in");
+      $("tab-up").classList.toggle("on", m === "up");
+      $("name-row").hidden = m === "in";
+      $("submit").textContent = m === "in" ? "Sign in" : "Create account";
+      $("password").autocomplete = m === "in" ? "current-password" : "new-password";
+      $("hint").textContent = m === "in"
+        ? "Administrators and clients sign in here. The page you see depends on your account."
+        : "Usernames: 3-30 letters, numbers, dot, dash or underscore. Passwords: 8+ characters. New accounts are clients.";
+      $("msg").textContent = "";
+    }
+    $("tab-in").onclick = () => setMode("in");
+    $("tab-up").onclick = () => setMode("up");
+
+    $("form").addEventListener("submit", async ev => {
+      ev.preventDefault();
+      const msg = $("msg"); msg.className = "msg"; msg.textContent = "";
+      $("submit").disabled = true;
+      try {
+        const body = { username: $("username").value, password: $("password").value };
+        if (mode === "up") body.fullName = $("fullName").value;
+        const user = await api(mode === "in" ? "/api/auth/login" : "/api/auth/register",
+                               { method: "POST", body, noRedirect: true });
+        location.href = user.role === "ADMIN" ? "/admin/index.html" : "/client/index.html";
+      } catch (e) {
+        msg.className = "msg err"; msg.textContent = e.message;
+        $("submit").disabled = false;
+      }
+    });
+
+    // Already signed in? Skip the form.
+    fetch("/api/auth/me", { credentials: "same-origin" }).then(r => r.ok ? r.json() : null)
+      .then(u => { if (u) location.replace(u.role === "ADMIN" ? "/admin/index.html" : "/client/index.html"); });
+  </script>
+</body>
+</html>

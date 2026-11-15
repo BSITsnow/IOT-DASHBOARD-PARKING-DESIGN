@@ -1,0 +1,10 @@
+.banner { background: var(--bad); color: #fff; padding: 12px 16px; border-radius: 10px; font-weight: 700;
+          margin-bottom: 16px; text-align: center; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+.slot { border-radius: 12px; padding: 18px 8px; text-align: center; border: 2px solid; font-weight: 700; }
+.slot small { display: block; font-weight: 500; font-size: 12px; margin-top: 4px; }
+.slot.free { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.slot.taken { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.status { margin-top: 18px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.dot.live { background: var(--ok); } .dot.stale { background: var(--warn); }
