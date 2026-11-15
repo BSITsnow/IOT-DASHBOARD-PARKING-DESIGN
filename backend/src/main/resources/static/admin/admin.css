@@ -35,3 +35,8 @@ tr:nth-child(even) td { background: #f9fafb; }
 .vacant-text { color: #16a34a; font-weight: bold; }
 .badge-active { color: #dc2626; font-weight: bold; }
 .badge-done { color: #6b7280; }
+
+.who { display: flex; align-items: center; gap: 14px; font-size: 14px; }
+.who button { background: transparent; color: white; border: 1px solid #9ca3af; border-radius: 8px;
+              padding: 6px 12px; cursor: pointer; }
+.who button:hover { background: #374151; }

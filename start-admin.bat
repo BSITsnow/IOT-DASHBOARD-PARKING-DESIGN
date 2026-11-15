@@ -10,9 +10,9 @@ start "Parking Backend" cmd /k ".\mvnw.cmd spring-boot:run"
 echo Waiting for the server to be ready...
 :wait
 timeout /t 2 /nobreak >nul
-curl.exe -s -o nul http://localhost:8080/admin/index.html
+curl.exe -s -o nul http://localhost:8080/login.html
 if errorlevel 1 goto wait
 
-echo Server is up. Opening admin page...
-start "" http://localhost:8080/admin/index.html
+echo Server is up. Opening login page...
+start "" http://localhost:8080/login.html
 exit

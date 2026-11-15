@@ -2,6 +2,10 @@ const $ = (id) => document.getElementById(id);
 
 async function getJson(url) {
   const response = await fetch(url);
+  if (response.status === 401 || response.status === 403) {
+    location.href = "/login.html";          // session expired or not signed in
+    throw new Error("Not signed in");
+  }
   if (!response.ok) throw new Error(url + " -> HTTP " + response.status);
   return response.json();
 }
@@ -108,6 +112,15 @@ async function refresh() {
     $("status").textContent = "Cannot reach backend";
   }
 }
+
+$("logout").addEventListener("click", async () => {
+  await fetch("/api/auth/logout", { method: "POST" });
+  location.href = "/login.html";
+});
+
+fetch("/api/auth/me").then((r) => r.ok ? r.json() : null).then((u) => {
+  if (u) $("user").textContent = u.fullName || u.username;
+}).catch(() => {});
 
 refresh();
 setInterval(refresh, 3000);

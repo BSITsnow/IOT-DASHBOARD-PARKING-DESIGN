@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Parking Admin: Sign in</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", sans-serif; background: #f4f6f9; color: #1f2937; margin: 0;
+           min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+    .login { width: 100%; max-width: 380px; background: white; border-radius: 12px;
+             box-shadow: 0 2px 8px rgba(0,0,0,.08); overflow: hidden; }
+    .login header { background: #1f2937; color: white; padding: 20px 24px; }
+    .login header h1 { margin: 0; font-size: 20px; }
+    .login header p { margin: 4px 0 0; font-size: 13px; color: #d1d5db; }
+    form { padding: 24px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 6px; }
+    input[type="text"], input[type="password"] {
+      width: 100%; padding: 10px 12px; margin-bottom: 16px; font-size: 15px;
+      border: 1px solid #d1d5db; border-radius: 8px; }
+    input:focus { outline: 2px solid #3b82f6; outline-offset: 1px; border-color: #3b82f6; }
+    .show { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 400;
+            margin: -6px 0 16px; cursor: pointer; }
+    button { width: 100%; padding: 11px; font-size: 15px; font-weight: 600; color: white;
+             background: #1f2937; border: 0; border-radius: 8px; cursor: pointer; }
+    button:hover { background: #111827; }
+    button:disabled { opacity: .6; cursor: default; }
+    .msg { min-height: 20px; margin-top: 14px; font-size: 13px; color: #dc2626; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="login">
+    <header>
+      <h1>Smart Parking Admin</h1>
+      <p>Sign in to manage the parking lot.</p>
+    </header>
+
+    <form id="form" autocomplete="on">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" autocomplete="username"
+             maxlength="30" required autofocus>
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+      <label class="show"><input type="checkbox" id="show"> Show password</label>
+
+      <button type="submit" id="submit">Sign in</button>
+      <div class="msg" id="msg" role="alert"></div>
+    </form>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    $("show").addEventListener("change", () => {
+      $("password").type = $("show").checked ? "text" : "password";
+    });
+
+    $("form").addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      $("msg").textContent = "";
+      $("submit").disabled = true;
+      try {
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: $("username").value, password: $("password").value })
+        });
+        let data = null;
+        try { data = await res.json(); } catch (e) { /* empty body */ }
+        if (!res.ok) throw new Error((data && data.error) || "Sign in failed (HTTP " + res.status + ")");
+        location.href = "/admin/index.html";
+      } catch (e) {
+        $("msg").textContent = e instanceof TypeError ? "Cannot reach the server." : e.message;
+        $("submit").disabled = false;
+        $("password").select();
+      }
+    });
+
+    // Already signed in? Skip the form.
+    fetch("/api/auth/me", { credentials: "same-origin" })
+      .then((r) => { if (r.ok) location.replace("/admin/index.html"); })
+      .catch(() => {});
+  </script>
+</body>
+</html>
