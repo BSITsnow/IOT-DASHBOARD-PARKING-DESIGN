@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parking Admin</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header>
+    <h1>Smart Parking Admin</h1>
+    <div class="who">
+      <span id="status">Loading...</span>
+      <span id="user"></span>
+      <button id="logout" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="cards">
+      <div class="card"><p>Total slots</p><strong id="total">-</strong></div>
+      <div class="card green"><p>Available</p><strong id="available">-</strong></div>
+      <div class="card red"><p>Occupied</p><strong id="occupied">-</strong></div>
+      <div class="card"><p>Sessions today</p><strong id="today">-</strong></div>
+      <div class="card"><p>Average stay</p><strong id="avg">-</strong></div>
+      <div class="card"><p>Longest stay</p><strong id="longest">-</strong></div>
+    </section>
+
+    <h2>Live slots</h2>
+    <section id="slotGrid" class="slot-grid"></section>
+
+    <div class="row">
+      <h2>Session history</h2>
+      <select id="slotFilter">
+        <option value="">All slots</option>
+      </select>
+    </div>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Slot</th><th>Started</th><th>Ended</th><th>Duration</th><th>State</th></tr>
+      </thead>
+      <tbody id="sessionRows"></tbody>
+    </table>
+
+    <h2>Recent slot changes</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Slot</th><th>Change</th><th>Time</th></tr>
+      </thead>
+      <tbody id="eventRows"></tbody>
+    </table>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>

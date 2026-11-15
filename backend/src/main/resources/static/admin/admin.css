@@ -1,0 +1,42 @@
+body { font-family: "Segoe UI", sans-serif; background: #f4f6f9; margin: 0; color: #1f2937; }
+header { background: #1f2937; color: white; padding: 16px 24px;
+         display: flex; justify-content: space-between; align-items: center; }
+header h1 { margin: 0; font-size: 20px; }
+main { padding: 24px; max-width: 1000px; margin: 0 auto; }
+h2 { font-size: 16px; margin: 28px 0 12px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+.card { background: white; border-radius: 12px; padding: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.card p { margin: 0 0 4px; font-size: 12px; color: #6b7280; }
+.card strong { font-size: 26px; }
+.card.green strong { color: #16a34a; }
+.card.red strong { color: #dc2626; }
+
+.slot-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+.slot { border-radius: 12px; padding: 16px; color: white; text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+.slot.vacant { background: #22c55e; }
+.slot.occupied { background: #ef4444; }
+.slot .name { font-size: 22px; font-weight: bold; }
+.slot .state { font-size: 12px; font-weight: bold; margin-top: 4px; }
+.slot .since { font-size: 12px; margin-top: 6px; opacity: .9; }
+
+.row { display: flex; justify-content: space-between; align-items: center; }
+select { padding: 6px 10px; border-radius: 8px; border: 1px solid #d1d5db; }
+
+table { width: 100%; border-collapse: collapse; background: white;
+        border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+th, td { padding: 10px 14px; text-align: left; font-size: 14px; }
+th { background: #e5e7eb; font-size: 13px; }
+tr:nth-child(even) td { background: #f9fafb; }
+
+.occupied-text { color: #dc2626; font-weight: bold; }
+.vacant-text { color: #16a34a; font-weight: bold; }
+.badge-active { color: #dc2626; font-weight: bold; }
+.badge-done { color: #6b7280; }
+
+.who { display: flex; align-items: center; gap: 14px; font-size: 14px; }
+.who button { background: transparent; color: white; border: 1px solid #9ca3af; border-radius: 8px;
+              padding: 6px 12px; cursor: pointer; }
+.who button:hover { background: #374151; }
