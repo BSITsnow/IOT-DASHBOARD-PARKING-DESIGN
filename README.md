@@ -65,3 +65,51 @@ Example Arduino sketch for 6 IR sensors (LOW = vehicle detected):
 - FrameParser.java: validates incoming lines
 - SimulatedDataSource / SerialDataSource: demo vs. real hardware
 - resources/lot-layout.txt, resources/dashboard.css: your design files
+
+## Backend, database and accounts (Spring Boot + H2)
+
+The `backend/` folder receives sensor frames, stores every slot change in a database, and serves
+a web portal with two kinds of accounts.
+
+    cd backend
+    ./mvnw spring-boot:run          (Windows: mvnw.cmd spring-boot:run)
+
+Open http://localhost:8080 and sign in.
+
+| Account | What they see |
+|---|---|
+| **Client** | `/client/index.html`: live availability (green/red slots, counts, occupancy %, full-lot alert) |
+| **Admin** | `/admin/index.html`: analytics, user management, sign-in history, raw slot changes |
+
+First administrator (created automatically when no admin exists; change it in
+`backend/src/main/resources/application.properties`):
+
+    username: admin
+    password: admin123      <- change this after the first sign-in (Admin > My account)
+
+Visitors can create their own **client** account on the login page
+(`parking.registration.enabled=false` turns that off; admins can still create accounts).
+
+### Database tables (H2 file: `backend/data/parking`)
+- `slot_event`: one row per slot status change (slot number, occupied or vacant, time). Raw data.
+- `app_user`: accounts (username, role ADMIN/CLIENT, active flag, salted password hash, last sign-in)
+- `login_log`: every sign-in attempt (who, success/failed, reason, IP, time)
+
+Passwords are stored only as salted PBKDF2 hashes. Nobody, including admins, can read them back;
+an admin can reset a password. Five wrong passwords lock that username and IP for one minute.
+
+### Analytics (admin only)
+Computed from `slot_event` by `Analytics.java` for the last 1, 7, 30 or 90 days: occupancy now,
+average occupancy, arrivals, average and longest stay, peak hour, busiest slot, occupancy by hour of
+day, arrivals per day, and a per-slot table. Hours use `parking.timezone` (default `Asia/Manila`).
+Time before the first recorded change is not counted, and a slot is assumed to keep its last status
+while the backend is switched off.
+
+### Who can reach what
+- `POST /api/frame` and `GET /api/frame` stay open: the sensor board posts there and the JavaFX
+  dashboard polls it (`--server=http://localhost:8080/api/frame`).
+- Everything else needs a sign-in. `/admin/**`, `/api/admin/**` and `/api/events` are admin only.
+- Disabling an account or changing its role takes effect on the next request.
+
+### H2 file location
+The database lives in `backend/data/`. Delete that folder to start fresh (this removes all accounts and history).

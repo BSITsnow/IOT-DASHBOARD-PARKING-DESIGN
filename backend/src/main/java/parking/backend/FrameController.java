@@ -72,18 +72,22 @@ public class FrameController {
         return tooOld ? "" : latestFrame;
     }
 
+    public long updatedAtMillis() {                                  // when the newest frame arrived (0 = never)
+        return updatedAtMillis;
+    }
+
     @GetMapping("/events")
     public List<SlotEvent> events(@RequestParam(defaultValue = "50") int limit) {
         int size = Math.min(Math.max(limit, 1), 500);
         return repository.findAllByOrderByRecordedAtDesc(PageRequest.of(0, size));
     }
 
-    private static boolean[] parse(String text) {
-        String s = text.trim();
-        if (s.startsWith("S:") || s.startsWith("s:")) s = s.substring(2);
-        s = s.replace(",", "").replace(" ", "");
-        if (s.isEmpty() || !s.matches("[01]+")) return null;
-        boolean[] result = new boolean[s.length()];
+    private static boolean[] parse(String text) {                    // converts "S:1,0" into {true, false}
+        String s = text.trim();                                      // remove spaces and newlines at the ends
+        if (s.startsWith("S:") || s.startsWith("s:")) s = s.substring(2);   // remove the optional prefix
+        s = s.replace(",", "").replace(" ", "");                     // remove commas and spaces
+        if (s.isEmpty() || !s.matches("[01]+")) return null;         // must be only 1s and 0s, otherwise invalid
+        boolean[] result = new boolean[s.length()];                  // one entry per slot
         for (int i = 0; i < s.length(); i++) {
             result[i] = s.charAt(i) == '1';
         }

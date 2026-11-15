@@ -3,16 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Parking Admin</title>
+  <title>Smart Parking: Admin</title>
+  <link rel="stylesheet" href="/assets/app.css">
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-  <header>
+  <header class="top">
     <h1>Smart Parking Admin</h1>
-    <span id="status">Loading...</span>
+    <div class="who"><span id="who"></span>
+      <button class="ghost small" type="button" onclick="logout()">Sign out</button></div>
   </header>
 
   <main>
+<<<<<<< HEAD
     <section class="cards">
       <div class="card"><p>Total slots</p><strong id="total">-</strong></div>
       <div class="card green"><p>Available</p><strong id="available">-</strong></div>
@@ -45,8 +48,77 @@
       </thead>
       <tbody id="eventRows"></tbody>
     </table>
+=======
+    <nav class="tabs" id="tabs">
+      <button type="button" data-tab="analytics" class="on">Analytics</button>
+      <button type="button" data-tab="users">Users</button>
+      <button type="button" data-tab="activity">Activity</button>
+      <button type="button" data-tab="account">My account</button>
+    </nav>
+
+    <!-- ANALYTICS -->
+    <section id="tab-analytics">
+      <div class="toolbar">
+        <label for="days">Period</label>
+        <select id="days"><option value="1">Last 24 hours</option><option value="7" selected>Last 7 days</option>
+          <option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
+        <span class="muted" id="range"></span>
+      </div>
+      <div class="cards" id="summary"></div>
+
+      <h2>Occupancy by hour of day</h2>
+      <div class="card"><div class="chart" id="hourly"></div>
+        <p class="muted note">Average share of slots occupied in each hour. Bars are scaled to the busiest hour.</p></div>
+
+      <h2>Arrivals per day</h2>
+      <div class="card"><div class="chart days" id="daily"></div></div>
+
+      <h2>Per slot</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Slot</th><th>Now</th><th>Occupancy</th><th>Arrivals</th><th>Completed stays</th>
+          <th>Avg stay</th><th>Longest stay</th></tr></thead>
+        <tbody id="slot-rows"></tbody></table></div>
+    </section>
+
+    <!-- USERS -->
+    <section id="tab-users" hidden>
+      <h2 style="margin-top:0">Accounts</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Username</th><th>Name</th><th>Role</th><th>Status</th><th>Password</th><th>Last sign-in</th><th>Actions</th></tr></thead>
+        <tbody id="user-rows"></tbody></table></div>
+      <p class="muted note">Passwords are stored as salted hashes, so they cannot be read back, not even by an admin. Use "Reset password" to set a new one.</p>
+
+      <h2>Create an account</h2>
+      <form class="card form-grid" id="new-user">
+        <div><label>Username</label><input name="username" required maxlength="30" autocomplete="off"></div>
+        <div><label>Full name</label><input name="fullName" maxlength="80" autocomplete="off"></div>
+        <div><label>Password (8+)</label><input name="password" type="password" required minlength="8" autocomplete="new-password"></div>
+        <div><label>Role</label><select name="role"><option value="CLIENT">Client</option><option value="ADMIN">Admin</option></select></div>
+        <div class="full"><button class="primary" type="submit">Create account</button><div class="msg" id="new-user-msg"></div></div>
+      </form>
+    </section>
+
+    <!-- ACTIVITY -->
+    <section id="tab-activity" hidden>
+      <h2 style="margin-top:0">Sign-in history</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Time</th><th>Username</th><th>Result</th><th>Note</th><th>IP</th></tr></thead>
+        <tbody id="login-rows"></tbody></table></div>
+
+      <h2>Recent slot changes</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>#</th><th>Slot</th><th>Change</th><th>Time</th></tr></thead>
+        <tbody id="event-rows"></tbody></table></div>
+    </section>
+
+    <!-- ACCOUNT -->
+    <section id="tab-account" hidden>
+      <div class="card" style="max-width:380px"><strong>Change my password</strong><div id="pw-box"></div></div>
+    </section>
+>>>>>>> 9a650f05159ae8b62142f9780e931f06e227c939
   </main>
 
+  <script src="/assets/api.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>
