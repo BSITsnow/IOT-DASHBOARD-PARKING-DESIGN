@@ -16,10 +16,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * Every request passes through here.
- *   public      the login page, the login/logout/me calls, and /api/frame (the ESP32 posts here, the JavaFX app polls it)
- *   everything else (admin page, /api/admin/**, /api/events, H2 console) needs a signed-in, active ADMIN
- * The user is re-read from the database on each request, so disabling an account takes effect immediately.
+ * The gatekeeper. Every request passes through here before reaching a page or API.
+ *
+ *   public            login page, sign-in/sign-up calls, and the sensor/dashboard feed (/api/frame)
+ *   any signed-in user  everything else (client page, change password)
+ *   ADMIN only        /admin/**, /api/admin/**, /api/events
+ *
+ * The user is looked up in the database on every request, so disabling an account
+ * or changing its role takes effect immediately, even for people already signed in.
  */
 @Component
 public class AuthFilter implements Filter {
@@ -29,8 +33,8 @@ public class AuthFilter implements Filter {
 
     private static final Set<String> PUBLIC_PATHS = Set.of(
             "/", "/index.html", "/login.html", "/favicon.ico", "/error",
-            "/api/auth/login", "/api/auth/logout", "/api/auth/me",
-            "/api/frame");
+            "/api/auth/login", "/api/auth/register", "/api/auth/logout", "/api/auth/me",
+            "/api/frame");                       // the ESP32/Arduino posts here, the JavaFX app polls here
 
     private final AppUserRepository users;
 
@@ -44,41 +48,52 @@ public class AuthFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpServletResponse response = (HttpServletResponse) res;
 
-        // getServletPath() is decoded and normalised; lower-case it so /ADMIN/ cannot slip past on Windows.
+        // getServletPath() is already decoded and normalised (no "..", no ";x=1"), lower-cased
+        // so that /ADMIN/ cannot slip past on case-insensitive file systems.
         String path = request.getServletPath();
         if (path == null || path.isEmpty()) path = "/";
         path = path.toLowerCase(Locale.ROOT);
 
-        AppUser user = currentAdmin(request);
+        AppUser user = currentUser(request);
         if (user != null) request.setAttribute(USER_ATTR, user);
 
-        if (PUBLIC_PATHS.contains(path)) {
+        if (PUBLIC_PATHS.contains(path) || path.startsWith("/assets/")) {
             chain.doFilter(req, res);
             return;
         }
 
+        boolean api = path.startsWith("/api/");
         if (user == null) {
-            if (path.startsWith("/api/")) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.setCharacterEncoding("UTF-8");
-                response.getWriter().write("{\"error\":\"Please sign in\"}");
-            } else {
-                response.sendRedirect("/login.html");
-            }
+            deny(response, api, HttpServletResponse.SC_UNAUTHORIZED, "Please sign in", "/login.html");
             return;
         }
+
+        boolean adminArea = path.startsWith("/admin") || path.startsWith("/api/admin") || path.startsWith("/api/events");
+        if (adminArea && user.getRole() != AppUser.Role.ADMIN) {
+            deny(response, api, HttpServletResponse.SC_FORBIDDEN, "Administrators only", "/client/index.html");
+            return;
+        }
+
         chain.doFilter(req, res);
     }
 
-    private AppUser currentAdmin(HttpServletRequest request) {
+    private AppUser currentUser(HttpServletRequest request) {
         HttpSession session = request.getSession(false);       // false = do not create a session just to look
         if (session == null) return null;
         Object id = session.getAttribute(SESSION_USER_ID);
         if (!(id instanceof Long)) return null;
-        return users.findById((Long) id)
-                .filter(AppUser::isActive)
-                .filter(u -> u.getRole() == AppUser.Role.ADMIN)
-                .orElse(null);
+        return users.findById((Long) id).filter(AppUser::isActive).orElse(null);
+    }
+
+    private static void deny(HttpServletResponse response, boolean api, int status, String message, String redirect)
+            throws IOException {
+        if (api) {
+            response.setStatus(status);
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write("{\"error\":\"" + message + "\"}");
+        } else {
+            response.sendRedirect(redirect);
+        }
     }
 }

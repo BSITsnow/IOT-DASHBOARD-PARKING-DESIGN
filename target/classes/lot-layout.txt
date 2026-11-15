@@ -17,8 +17,4 @@ exit 632 220
 
 slot P1 110 48 130 102 down
 slot P2 260 48 130 102 down
-slot P3 410 48 130 102 down
 
-slot P4 110 290 130 102 up
-slot P5 260 290 130 102 up
-slot P6 410 290 130 102 up

@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="0; url=/login.html">
-  <title>Smart Parking Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Parking</title>
 </head>
-<body><a href="/login.html">Go to sign in</a></body>
+<body>
+  <script>
+    // Send each visitor to the right place: admins to /admin/, clients to /client/, everyone else to login.
+    fetch("/api/auth/me", { credentials: "same-origin" })
+      .then(r => r.ok ? r.json() : null)
+      .then(u => { location.replace(!u ? "/login.html" : u.role === "ADMIN" ? "/admin/index.html" : "/client/index.html"); })
+      .catch(() => { location.replace("/login.html"); });
+  </script>
+</body>
 </html>
