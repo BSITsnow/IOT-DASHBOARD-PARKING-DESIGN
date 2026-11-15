@@ -1,0 +1,10 @@
+parking\LotLayout$Slot.class
+parking\ParkingMap$SlotView.class
+parking\ParkingDashboard.class
+parking\SimulatedDataSource.class
+parking\DataSource.class
+parking\HttpDataSource.class
+parking\LotLayout.class
+parking\ParkingMap.class
+parking\FrameParser.class
+parking\SerialDataSource.class
