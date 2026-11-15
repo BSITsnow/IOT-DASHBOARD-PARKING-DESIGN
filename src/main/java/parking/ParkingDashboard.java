@@ -64,11 +64,17 @@ public class ParkingDashboard extends Application {
         layout = LotLayout.load(layoutFile == null ? null : Path.of(layoutFile));
         slotCount = layout.slots().size();
 
-        String port = args.get("port");
-        int baud = Integer.parseInt(args.getOrDefault("baud", "9600"));
-        source = (port == null)
-                ? new SimulatedDataSource(slotCount)
-                : new SerialDataSource(port, baud, slotCount);
+        String port = args.get("port");                                       // optional --port=COM3, null if not given
+        int baud = Integer.parseInt(args.getOrDefault("baud", "9600"));       // optional --baud=..., defaults to 9600
+        String server = args.get("server");                                   // optional --server=http://..., null if not given
+
+        if (server != null) {                                                 // a backend address was given, so poll Spring Boot
+            source = new HttpDataSource(server, slotCount);                   // slotCount lets FrameParser check the value count
+        } else if (port == null) {                                            // no server and no serial port, so run the demo
+            source = new SimulatedDataSource(slotCount);                      // your existing simulated data
+        } else {                                                              // a serial port was given
+            source = new SerialDataSource(port, baud, slotCount);             // your existing USB serial reader
+        }
 
         map = new ParkingMap(layout);
 
