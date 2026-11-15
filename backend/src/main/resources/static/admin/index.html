@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parking Admin</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header>
+    <h1>Smart Parking Admin</h1>
+    <span id="status">Loading...</span>
+  </header>
+
+  <main>
+    <section class="cards">
+      <div class="card"><p>Events loaded</p><strong id="count">0</strong></div>
+      <div class="card"><p>Last event</p><strong id="last">-</strong></div>
+    </section>
+
+    <h2>Recent slot changes</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Slot</th><th>Change</th><th>Time</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </main>
+
+  <script src="admin.js"></script>
+</body>
+</html>
