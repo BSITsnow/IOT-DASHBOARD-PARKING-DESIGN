@@ -1,13 +1,18 @@
 package parking.backend;
 
+import java.time.Instant;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
@@ -82,7 +87,7 @@ public class FrameController {
         return repository.findAllByOrderByRecordedAtDesc(PageRequest.of(0, size));
     }
 
-    private static boolean[] parse(String text) {                    // converts "S:1,0" into {true, false}
+    public static boolean[] parse(String text) {                    // converts "S:1,0" into {true, false}
         String s = text.trim();                                      // remove spaces and newlines at the ends
         if (s.startsWith("S:") || s.startsWith("s:")) s = s.substring(2);   // remove the optional prefix
         s = s.replace(",", "").replace(" ", "");                     // remove commas and spaces
