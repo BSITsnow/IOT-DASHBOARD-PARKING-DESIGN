@@ -1,5 +1,6 @@
 package parking.backend;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,20 +15,23 @@ public class FrameController {
 
     private final SlotEventRepository repository;
     private final ParkingSessionRepository sessionRepository;
+    private final int totalSlots;
     private volatile String latestFrame = "";
     private volatile long updatedAtMillis = 0;
     private boolean[] previous = null;
 
     public FrameController(SlotEventRepository repository,
-                           ParkingSessionRepository sessionRepository) {
+                           ParkingSessionRepository sessionRepository,
+                           @Value("${parking.total-slots:2}") int totalSlots) {
         this.repository = repository;
         this.sessionRepository = sessionRepository;
+        this.totalSlots = totalSlots;
     }
 
     @PostMapping(value = "/frame", consumes = MediaType.TEXT_PLAIN_VALUE)
     public synchronized ResponseEntity<Void> receive(@RequestBody String frame) {
         boolean[] current = parse(frame);
-        if (current == null) {
+        if (current == null || current.length != totalSlots) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -39,15 +43,19 @@ public class FrameController {
             if (changed) {
                 repository.save(new SlotEvent(i + 1, current[i], now));
 
-                // close any open session for this slot (leftover or normal departure)
-                sessionRepository.findBySlotNumberAndEndedAtIsNull(i + 1).ifPresent(s -> {
-                    s.close(now);
-                    sessionRepository.save(s);
-                });
-
-                // car arrived: open a new session
                 if (current[i]) {
+                    // car arrived: close any leftover open session, then open a new one
+                    sessionRepository.findBySlotNumberAndEndedAtIsNull(i + 1).ifPresent(s -> {
+                        s.close(now);
+                        sessionRepository.save(s);
+                    });
                     sessionRepository.save(new ParkingSession(i + 1, now));
+                } else {
+                    // car left: close the open session if there is one
+                    sessionRepository.findBySlotNumberAndEndedAtIsNull(i + 1).ifPresent(s -> {
+                        s.close(now);
+                        sessionRepository.save(s);
+                    });
                 }
             }
         }
