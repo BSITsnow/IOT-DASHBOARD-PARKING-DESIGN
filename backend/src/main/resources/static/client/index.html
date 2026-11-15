@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Parking: Availability</title>
+  <link rel="stylesheet" href="/assets/app.css">
+  <link rel="stylesheet" href="client.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Smart Parking</h1>
+    <div class="who"><span id="who"></span>
+      <button class="ghost small" id="pw-toggle" type="button">Password</button>
+      <button class="ghost small" type="button" onclick="logout()">Sign out</button></div>
+  </header>
+
+  <main>
+    <div id="full" class="banner" hidden>FULL CAPACITY: every monitored slot is occupied</div>
+
+    <section class="cards">
+      <div class="card"><p>Total slots</p><strong id="total">-</strong></div>
+      <div class="card"><p>Available</p><strong id="available" class="good">-</strong></div>
+      <div class="card"><p>Occupied</p><strong id="occupied" class="bad">-</strong></div>
+      <div class="card"><p>Occupancy</p><strong id="percent">-</strong>
+        <div class="bar" style="margin-top:8px"><i id="percent-bar" style="width:0"></i></div></div>
+    </section>
+
+    <h2>Parking slots</h2>
+    <div class="slots" id="slots"><div class="empty">Loading...</div></div>
+
+    <p class="status"><span id="dot" class="dot"></span><span id="updated">Waiting for data...</span></p>
+
+    <section class="card" id="pw-card" hidden style="max-width:380px"><strong>Change password</strong></section>
+  </main>
+
+  <script src="/assets/api.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>

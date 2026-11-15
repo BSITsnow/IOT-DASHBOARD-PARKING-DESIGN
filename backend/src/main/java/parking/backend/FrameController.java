@@ -50,13 +50,17 @@ public class FrameController {
         return tooOld ? "" : latestFrame;                            // an empty reply makes the dashboard show stale data
     }
 
+    public long updatedAtMillis() {                                  // when the newest frame arrived (0 = never)
+        return updatedAtMillis;
+    }
+
     @GetMapping("/events")                                           // GET /api/events returns JSON history
     public List<SlotEvent> events(@RequestParam(defaultValue = "50") int limit) {   // optional ?limit=...
         int size = Math.min(Math.max(limit, 1), 500);                // keep the limit between 1 and 500
         return repository.findAllByOrderByRecordedAtDesc(PageRequest.of(0, size));   // newest rows first
     }
 
-    private static boolean[] parse(String text) {                    // converts "S:1,0" into {true, false}
+    static boolean[] parse(String text) {                    // converts "S:1,0" into {true, false}
         String s = text.trim();                                      // remove spaces and newlines at the ends
         if (s.startsWith("S:") || s.startsWith("s:")) s = s.substring(2);   // remove the optional prefix
         s = s.replace(",", "").replace(" ", "");                     // remove commas and spaces
