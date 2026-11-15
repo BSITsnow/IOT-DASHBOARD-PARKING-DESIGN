@@ -1,0 +1,36 @@
+[33mcommit 9a650f05159ae8b62142f9780e931f06e227c939[m
+Author: mikazuki <jompoy26@gmail.com>
+Date:   Sun Nov 15 12:33:32 2026 +0800
+
+    Add admin/client accounts and analytics
+
+ README.md                                          |  48 [32m++++++[m
+ .../main/java/parking/backend/AdminController.java | 128 [32m++++++++++++++[m
+ .../src/main/java/parking/backend/Analytics.java   | 188 [32m+++++++++++++++++++++[m
+ backend/src/main/java/parking/backend/AppUser.java |  67 [32m++++++++[m
+ .../java/parking/backend/AppUserRepository.java    |  14 [32m++[m
+ .../main/java/parking/backend/AuthController.java  | 148 [32m++++++++++++++++[m
+ .../src/main/java/parking/backend/AuthFilter.java  |  99 [32m+++++++++++[m
+ .../java/parking/backend/ClientController.java     |  55 [32m++++++[m
+ .../src/main/java/parking/backend/DataSeeder.java  |  34 [32m++++[m
+ .../main/java/parking/backend/FrameController.java |   6 [32m+[m[31m-[m
+ .../src/main/java/parking/backend/LoginLog.java    |  46 [32m+++++[m
+ .../java/parking/backend/LoginLogRepository.java   |  11 [32m++[m
+ .../main/java/parking/backend/PasswordHasher.java  |  57 [32m+++++++[m
+ backend/src/main/java/parking/backend/Rules.java   |  43 [32m+++++[m
+ .../java/parking/backend/SlotEventRepository.java  |  13 [32m+[m[31m-[m
+ .../src/main/java/parking/backend/UserView.java    |  13 [32m++[m
+ backend/src/main/resources/application.properties  |  15 [32m++[m
+ backend/src/main/resources/static/admin/admin.css  |  34 [32m++[m[31m--[m
+ backend/src/main/resources/static/admin/admin.js   | 168 [32m+++++++++++++++[m[31m---[m
+ backend/src/main/resources/static/admin/index.html |  85 [32m++++++++[m[31m--[m
+ backend/src/main/resources/static/assets/api.js    |  67 [32m++++++++[m
+ backend/src/main/resources/static/assets/app.css   |  54 [32m++++++[m
+ .../src/main/resources/static/client/client.css    |  10 [32m++[m
+ backend/src/main/resources/static/client/client.js |  38 [32m+++++[m
+ .../src/main/resources/static/client/index.html    |  40 [32m+++++[m
+ backend/src/main/resources/static/index.html       |  17 [32m++[m
+ backend/src/main/resources/static/login.html       |  86 [32m++++++++++[m
+ .../test/java/parking/backend/AnalyticsTest.java   |  92 [32m++++++++++[m
+ .../java/parking/backend/PasswordHasherTest.java   |  37 [32m++++[m
+ 29 files changed, 1651 insertions(+), 62 deletions(-)
