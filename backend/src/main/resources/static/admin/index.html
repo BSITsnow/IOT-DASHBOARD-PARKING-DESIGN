@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Parking Admin</title>
-  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="admin.css?v=2">
 </head>
 <body>
   <header>
@@ -21,13 +21,27 @@
       <div class="card"><p>Total slots</p><strong id="total">-</strong></div>
       <div class="card green"><p>Available</p><strong id="available">-</strong></div>
       <div class="card red"><p>Occupied</p><strong id="occupied">-</strong></div>
-      <div class="card"><p>Sessions today</p><strong id="today">-</strong></div>
+      <div class="card"><p>Arrivals (7 days)</p><strong id="today">-</strong></div>
       <div class="card"><p>Average stay</p><strong id="avg">-</strong></div>
       <div class="card"><p>Longest stay</p><strong id="longest">-</strong></div>
+      <div class="card"><p>Average occupancy</p><strong id="occupancy">-</strong></div>
+      <div class="card"><p>Busiest slot</p><strong id="busiest">-</strong></div>
+      <div class="card"><p>Peak hour</p><strong id="peak">-</strong></div>
     </section>
 
     <h2>Live slots</h2>
     <section id="slotGrid" class="slot-grid"></section>
+
+    <section class="trend-grid">
+      <div class="panel">
+        <h2>Arrivals by day</h2>
+        <div id="dailyTrend" class="trend-list"></div>
+      </div>
+      <div class="panel">
+        <h2>Occupancy by hour</h2>
+        <div id="hourlyTrend" class="trend-list"></div>
+      </div>
+    </section>
 
     <div class="row">
       <h2>Session history</h2>
@@ -51,6 +65,6 @@
     </table>
   </main>
 
-  <script src="admin.js"></script>
+  <script src="admin.js?v=4"></script>
 </body>
 </html>

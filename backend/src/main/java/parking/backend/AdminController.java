@@ -30,17 +30,21 @@ public class AdminController {
     public record CreateUser(String username, String password, String fullName, String role) { }
     public record UpdateUser(String fullName, String role, Boolean active, String password) { }
     public record LoginView(Long id, String username, boolean success, String ipAddress, String note, String loggedAt) { }
+    public record SessionView(Long id, int slotNumber, String startedAt, String endedAt,
+                              long durationSeconds, boolean active) { }
 
     private final AppUserRepository users;
     private final LoginLogRepository logins;
     private final SlotEventRepository events;
+    private final ParkingSessionRepository sessions;
     private final ZoneId zone;
 
     public AdminController(AppUserRepository users, LoginLogRepository logins, SlotEventRepository events,
-                           @Value("${parking.timezone:}") String timezone) {
+                           ParkingSessionRepository sessions, @Value("${parking.timezone:}") String timezone) {
         this.users = users;
         this.logins = logins;
         this.events = events;
+        this.sessions = sessions;
         this.zone = timezone == null || timezone.isBlank() ? ZoneId.systemDefault() : ZoneId.of(timezone);
     }
 
@@ -53,6 +57,25 @@ public class AdminController {
                 .map(e -> new Analytics.Ev(e.getSlotNumber(), e.isOccupied(), e.getRecordedAt()))
                 .toList();
         return Analytics.compute(all, Instant.now(), window, zone);
+    }
+
+    @GetMapping("/sessions")
+    public List<SessionView> sessions(@RequestParam(defaultValue = "50") int limit,
+                                      @RequestParam(required = false) Integer slot) {
+        int size = Math.min(Math.max(limit, 1), 500);
+        Instant now = Instant.now();
+        List<ParkingSession> rows = slot == null
+                ? sessions.findAllByOrderByStartedAtDesc(PageRequest.of(0, size))
+                : sessions.findBySlotNumberOrderByStartedAtDesc(slot, PageRequest.of(0, size));
+        return rows.stream()
+                .map(s -> {
+                    Instant end = s.getEndedAt() == null ? now : s.getEndedAt();
+                    long duration = Math.max(0, java.time.Duration.between(s.getStartedAt(), end).getSeconds());
+                    return new SessionView(s.getId(), s.getSlotNumber(), s.getStartedAt().toString(),
+                            s.getEndedAt() == null ? null : s.getEndedAt().toString(), duration,
+                            s.getEndedAt() == null);
+                })
+                .toList();
     }
 
     @GetMapping("/logins")
