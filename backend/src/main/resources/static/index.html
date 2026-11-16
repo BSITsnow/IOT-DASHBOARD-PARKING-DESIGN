@@ -1,17 +1,169 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>                                              <!-- tells the browser this is a modern HTML page -->
+<html lang="en">                                             <!-- the page language -->
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Smart Parking</title>
+  <meta charset="UTF-8">                                     <!-- text encoding -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">   <!-- makes the page fit a phone screen -->
+  <title>Smart Parking</title>                               <!-- title shown in the browser tab -->
+  <style>
+    :root {                                                  /* color variables used below */
+      --bg: #f4f6f8;                                         /* page background */
+      --card: #ffffff;                                       /* card background */
+      --text: #14202b;                                       /* main text */
+      --muted: #5c6b78;                                      /* secondary text */
+      --free: #1f9d55;                                       /* green, vacant */
+      --used: #d64545;                                       /* red, occupied */
+      --warn: #d99a1a;                                       /* amber, no recent data */
+      --idle: #8a96a0;                                       /* gray, waiting */
+    }
+    @media (prefers-color-scheme: dark) {                    /* when the phone uses dark mode */
+      :root { --bg: #10161c; --card: #1a232c; --text: #e8eef3; --muted: #9aa8b4; }
+    }
+    * { box-sizing: border-box; }                            /* padding does not make elements wider */
+    body { margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+           font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }   /* page look */
+    main { max-width: 520px; margin: 0 auto; }               /* a centered column that suits phones and desktops */
+    h1 { margin: 4px 0 2px; font-size: 1.5rem; }             /* the title */
+    .sub { margin: 0 0 16px; color: var(--muted); font-size: 0.9rem; }   /* the subtitle */
+    .banner { padding: 16px; border-radius: 14px; font-size: 1.25rem; font-weight: 700;
+              text-align: center; color: #fff; background: var(--idle); }   /* the big status box */
+    .banner.ok { background: var(--free); }                  /* green when slots are available */
+    .banner.full { background: var(--used); }                /* red when full */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }   /* three number cards in a row */
+    .card { background: var(--card); border-radius: 12px; padding: 12px; text-align: center; }    /* one number card */
+    .card .num { font-size: 1.8rem; font-weight: 700; }      /* the big number */
+    .card .cap { font-size: 0.75rem; color: var(--muted); }  /* the small caption under it */
+    .slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+             gap: 10px; transition: opacity 0.3s; }          /* the grid of slot tiles */
+    .slots.stale { opacity: 0.45; }                          /* dim the tiles when the data is old */
+    .slot { border-radius: 14px; padding: 18px 8px; text-align: center; color: #fff; background: var(--free); }   /* one slot tile, green by default */
+    .slot.used { background: var(--used); }                  /* red when occupied */
+    .slot .name { font-size: 1.3rem; font-weight: 700; }     /* the slot name, e.g. P1 */
+    .slot .state { font-size: 0.85rem; letter-spacing: 0.08em; }   /* VACANT or OCCUPIED */
+    .status { display: flex; align-items: center; gap: 8px; margin-top: 16px;
+              color: var(--muted); font-size: 0.85rem; }     /* the line with the colored dot at the bottom */
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--idle); flex: none; }   /* the round indicator */
+    .dot.ok { background: var(--free); }                     /* green, recent data */
+    .dot.stale { background: var(--warn); }                  /* amber, no recent data */
+    .dot.down { background: var(--used); }                   /* red, cannot reach the server */
+  </style>
 </head>
 <body>
+  <main>
+    <h1>Smart Parking</h1>                                   <!-- page title -->
+    <p class="sub">Live slot status</p>                      <!-- subtitle -->
+    <div id="banner" class="banner">Waiting for data...</div>   <!-- big status box, filled in by the script -->
+    <div class="cards">                                      <!-- the three number cards -->
+      <div class="card"><div class="num" id="free">0</div><div class="cap">Available</div></div>
+      <div class="card"><div class="num" id="used">0</div><div class="cap">Occupied</div></div>
+      <div class="card"><div class="num" id="total">0</div><div class="cap">Total</div></div>
+    </div>
+    <div id="slots" class="slots"></div>                     <!-- slot tiles are added here by the script -->
+    <div class="status"><span id="dot" class="dot"></span><span id="status">Waiting for data...</span></div>   <!-- connection status line -->
+  </main>
+
   <script>
-    // Send each visitor to the right place: admins to /admin/, clients to /client/, everyone else to login.
-    fetch("/api/auth/me", { credentials: "same-origin" })
-      .then(r => r.ok ? r.json() : null)
-      .then(u => { location.replace(!u ? "/login.html" : u.role === "ADMIN" ? "/admin/index.html" : "/client/index.html"); })
-      .catch(() => { location.replace("/login.html"); });
+    const FRAME_URL = "/api/frame";                          // the backend endpoint, a relative address means "the server that sent this page"
+    const POLL_MS = 1000;                                    // ask for new data every second
+    const STALE_AFTER_MS = 10000;                            // no valid frame for 10 seconds counts as stale, same as the dashboard
+    const SLOT_NAMES = [];                                   // optional custom names such as ["P1", "P2"], empty means P1, P2, ...
+
+    let lastValid = 0;                                       // time of the last valid frame, 0 = none yet
+    let problem = "";                                        // text describing a connection problem, empty = no problem
+
+    const $ = id => document.getElementById(id);             // short helper to find an element by its id
+
+    function parseFrame(text) {                              // turns "S:1,0" into [true, false], or null if invalid
+      let s = text.trim();                                   // remove spaces and newlines at the ends
+      if (s.startsWith("S:") || s.startsWith("s:")) s = s.slice(2);   // remove the optional prefix
+      s = s.replace(/[,\s]/g, "");                           // remove commas and spaces
+      if (!/^[01]+$/.test(s)) return null;                   // must be only 1s and 0s, otherwise invalid
+      return Array.from(s, ch => ch === "1");                // '1' means occupied
+    }
+
+    function render(frame) {                                 // draws the numbers, the banner and the slot tiles
+      const used = frame.filter(Boolean).length;             // count the occupied slots
+      const free = frame.length - used;                      // the rest are free
+      $("free").textContent = free;                          // show the available count
+      $("used").textContent = used;                          // show the occupied count
+      $("total").textContent = frame.length;                 // show the total count
+
+      const banner = $("banner");                            // the big status box
+      if (free === 0) {                                      // no free slots
+        banner.textContent = "PARKING FULL";                 // tell the driver
+        banner.className = "banner full";                    // red
+      } else {
+        banner.textContent = free + (free === 1 ? " slot available" : " slots available");   // e.g. "1 slot available"
+        banner.className = "banner ok";                      // green
+      }
+
+      const container = $("slots");                          // where the tiles go
+      container.textContent = "";                            // remove the old tiles
+      frame.forEach((occupied, i) => {                       // one tile per slot
+        const tile = document.createElement("div");          // create the tile
+        tile.className = "slot" + (occupied ? " used" : ""); // red if occupied, green otherwise
+        const name = document.createElement("div");          // create the name line
+        name.className = "name";                             // style it
+        name.textContent = SLOT_NAMES[i] || "P" + (i + 1);   // custom name, or P1, P2, ...
+        const state = document.createElement("div");         // create the status line
+        state.className = "state";                           // style it
+        state.textContent = occupied ? "OCCUPIED" : "VACANT";   // the status text
+        tile.append(name, state);                            // put both lines in the tile
+        container.append(tile);                              // put the tile in the grid
+      });
+    }
+
+    function refreshStatus() {                               // updates the line and the dot at the bottom
+      const dot = $("dot");                                  // the round indicator
+      const text = $("status");                              // the text next to it
+      const slots = $("slots");                              // the tile grid
+
+      if (problem) {                                         // the server cannot be reached
+        dot.className = "dot down";                          // red dot
+        text.textContent = problem;                          // show what is wrong
+        slots.classList.add("stale");                        // dim the tiles
+        return;                                              // nothing more to show
+      }
+      if (lastValid === 0) {                                 // connected, but no frame yet
+        dot.className = "dot";                               // gray dot
+        text.textContent = "Waiting for sensor data...";     // say so
+        return;
+      }
+      const ago = Math.round((Date.now() - lastValid) / 1000);   // seconds since the last valid frame
+      const when = new Date(lastValid).toLocaleTimeString(); // the time of that frame
+      if (Date.now() - lastValid > STALE_AFTER_MS) {         // too old
+        dot.className = "dot stale";                         // amber dot
+        text.textContent = "Last update " + when + " (" + ago + "s ago), no recent data";   // warn
+        slots.classList.add("stale");                        // dim the tiles
+      } else {                                               // fresh
+        dot.className = "dot ok";                            // green dot
+        text.textContent = "Last update " + when + " (" + ago + "s ago)";   // show the age
+        slots.classList.remove("stale");                     // normal brightness
+      }
+    }
+
+    async function poll() {                                  // asks the backend for the latest frame, then schedules itself again
+      try {
+        const signal = AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined;   // give up after 3 seconds where supported
+        const response = await fetch(FRAME_URL, { cache: "no-store", signal });       // ask the backend, never use a cached answer
+        if (response.ok) {                                   // the backend answered normally
+          problem = "";                                      // no problem
+          const frame = parseFrame(await response.text());  // read and validate the text
+          if (frame) {                                       // a valid frame
+            lastValid = Date.now();                          // remember when it arrived
+            render(frame);                                   // draw it
+          }                                                  // an empty answer means the sensor is quiet, keep the old picture
+        } else {
+          problem = "Server answered " + response.status;    // for example 401 or 404
+        }
+      } catch (error) {
+        problem = "Cannot reach the server, check the Wi-Fi";   // no connection at all
+      }
+      refreshStatus();                                       // update the status line
+      setTimeout(poll, POLL_MS);                             // ask again after a second, only after this request finished
+    }
+
+    poll();                                                  // start asking
+    setInterval(refreshStatus, 1000);                        // keep the "seconds ago" text moving
   </script>
 </body>
 </html>
